@@ -63,6 +63,9 @@ struct LoginScreen: View {
             Alert(title: Text("Login Error"),
                   message: Text("Invalid user credentials, please try again"))
         }
+        .onTapGesture {
+            hideKeyboard()
+        }
     }
 }
 

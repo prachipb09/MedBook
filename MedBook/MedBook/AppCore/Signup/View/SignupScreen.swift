@@ -84,6 +84,9 @@ struct SignupScreen: View {
                       message: Text("Invalid user credentials, please try again"))
             }
         }
+        .onTapGesture {
+            hideKeyboard()
+        }
     }
     
     private func getCountriesList() {
