@@ -38,6 +38,12 @@ struct LandingScreen: View {
                     .frame(height: 80)
                 
             }
+            .onAppear(perform: {
+                //perform autologin
+                if UserDefaultsManager.shared.load(Bool.self, forKey: "isUserLoggedIn") ?? false {
+                    router.navigateTo(.home)
+                }
+            })
             .frame(maxWidth: .greatestFiniteMagnitude, maxHeight: .greatestFiniteMagnitude)
             .background(.gray.opacity(0.3))
         }

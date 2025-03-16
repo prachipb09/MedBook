@@ -34,65 +34,15 @@ struct HomeScreen: View {
     var body: some View {
         NavigationBar(hideBackButton: true) {
             VStack(alignment: .leading, spacing: 16) {
-                HStack(spacing: 12) {
-                    Image(systemName: "book.fill")
-                    Text("MedBook")
-                        .font(.largeTitle)
-                    Spacer()
-                    
-                    Button {
-                        viewModel.loadBookmarks()
-                        router.navigateTo(.bookmark(BookmarkViewModel(bookmarkedBooks: viewModel.bookmarkedBooks, callback: { updatedBookmarkedBooks in
-                            if updatedBookmarkedBooks.count != viewModel.bookmarkedBooks.count {
-                                viewModel.bookmarkedBooks = updatedBookmarkedBooks
-                                viewModel.saveBookmarks()
-                            }
-                        })))
-                    } label: {
-                        Image(systemName: "bookmark.fill")
-                            .foregroundStyle(.black)
-                    }
-                    
-                    Button {
-                        router.popALL()
-                    } label: {
-                        Image(systemName: "xmark.square")
-                            .foregroundStyle(.red)
-                    }
-                }
-                .imageScale(.large)
-                .foregroundStyle(.black)
-                
-                
-                Text("Which topic interests you today?")
-                    .bold()
-                    .font(.title2)
-                
+                headerView()
                 VStack {
-                    TextField("SearchBar", text: $searchText)
+                    TextField("Search your books....", text: $searchText)
                         // Sorting Options
-                    if !searchText.isEmpty && !viewModel.books.isEmpty {
-                        HStack {
-                            Text("Sort by:")
-                                .font(.headline)
-                            
-                            SortButton(title: "Title", selected: selectedSort == .title) {
-                                selectedSort = .title
-                            }
-                            
-                            SortButton(title: "Publish Year", selected: selectedSort == .firstPublishYear) {
-                                selectedSort = .firstPublishYear
-                            }
-                            
-                            SortButton(title: "Hits", selected: selectedSort == .authorName) {
-                                selectedSort = .authorName
-                            }
-                        }
-                    }
+                    sortingOptionView()
                 }
                 .padding()
-                .onChange(of: $searchText.wrappedValue) {
-                    if searchText.count >= 3 {
+                .onChange(of: $searchText.wrappedValue) { oldValue, newValue in
+                    if searchText.count >= 3 && oldValue != newValue.trim {
                         Task {
                             await viewModel.fetchResults(searchQuery: searchText, reset: true)
                         }
@@ -102,61 +52,131 @@ struct HomeScreen: View {
                 }
                 
                 if viewModel.books.isEmpty && !searchText.isEmpty {
-                    ProgressView()
-                    Spacer()
-                } else {
-                    List(sortedBooks, id: \.id) { book in
-                        HStack(alignment: .top) {
-                            if let cachedImage = viewModel.imageCache[book.key] {
-                                Image(uiImage: cachedImage)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 100, height: 100)
-                            } else {
-                                ProgressView()
-                                    .frame(width: 100, height: 100)
-                                    .onAppear {
-                                        Task {
-                                            await viewModel.loadImage(for: book)
-                                        }
-                                    }
-                            }
-                            Text(book.title)
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity)
-                        .contentShape(Rectangle())
-                        .swipeActions(edge: .trailing) {
-                            let bookmarkModel = BookMarksModel(
-                                key: book.key,
-                                imageData: viewModel.imageCache[book.key]?.pngData(),
-                                author: book.authorName?.first ?? "",
-                                title: book.title
-                            )
-                            
-                            Button {
-                                viewModel.toggleBookmark(for: bookmarkModel)
-                            } label: {
-                                Label(
-                                    viewModel.isBookmarked(bookmarkModel) ? "Saved" : "Bookmark it",
-                                    systemImage: viewModel.isBookmarked(bookmarkModel) ? "bookmark.fill" : "bookmark"
-                                )
-                            }
-                            .tint(viewModel.isBookmarked(bookmarkModel) ? .black : .blue)
-                        }
-                        .onAppear {
-                            if book.key == viewModel.books.last?.key {
-                                Task {
-                                    await viewModel.fetchResults(searchQuery: searchText)
-                                }
-                            }
-                        }
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
                     }
-                    .listStyle(.plain)
+                } else {
+                    listView()
                 }
             }
             .padding()
         }
+    }
+    
+    func swipeActionView(bookmarkModel: BookMarksModel) -> some View {
+        Button {
+            viewModel.toggleBookmark(for: bookmarkModel)
+        } label: {
+            Label(
+                viewModel.isBookmarked(bookmarkModel) ? "Saved" : "Bookmark it",
+                systemImage: viewModel.isBookmarked(bookmarkModel) ? "bookmark.fill" : "bookmark"
+            )
+        }
+        .tint(viewModel.isBookmarked(bookmarkModel) ? .black : .blue)
+    }
+    
+    @ViewBuilder
+    func sortingOptionView() -> some View {
+        if !searchText.trim.isEmpty && !viewModel.books.isEmpty {
+            HStack {
+                Text("Sort by:")
+                    .font(.headline)
+                
+                SortButton(title: "Title", selected: selectedSort == .title) {
+                    selectedSort = .title
+                }
+                
+                SortButton(title: "Publish Year", selected: selectedSort == .firstPublishYear) {
+                    selectedSort = .firstPublishYear
+                }
+                
+                SortButton(title: "Hits", selected: selectedSort == .authorName) {
+                    selectedSort = .authorName
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func listView() -> some View {
+        List(sortedBooks, id: \.id) { book in
+            HStack(alignment: .top) {
+                if let cachedImage = viewModel.imageCache[book.key] {
+                    Image(uiImage: cachedImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                } else {
+                    ProgressView()
+                        .frame(width: 100, height: 100)
+                        .onAppear {
+                            Task {
+                                await viewModel.loadImage(for: book)
+                            }
+                        }
+                }
+                Text(book.title)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+            .swipeActions(edge: .trailing) {
+                swipeActionView(bookmarkModel: BookMarksModel(
+                    key: book.key,
+                    imageData: viewModel.imageCache[book.key]?.pngData(),
+                    author: book.authorName?.first ?? "",
+                    title: book.title
+                ))
+            }
+            .onAppear {
+                if book.key == viewModel.books.last?.key {
+                    Task {
+                        await viewModel.fetchResults(searchQuery: searchText)
+                    }
+                }
+            }
+        }
+        .listStyle(.plain)
+    }
+    
+    @ViewBuilder
+    func headerView() -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "book.fill")
+            Text("MedBook")
+                .font(.largeTitle)
+            Spacer()
+            
+            Button {
+                viewModel.loadBookmarks()
+                router.navigateTo(.bookmark(BookmarkViewModel(bookmarkedBooks: viewModel.bookmarkedBooks,
+                                                              callback: { updatedBookmarkedBooks in
+                    if updatedBookmarkedBooks.count != viewModel.bookmarkedBooks.count {
+                        viewModel.bookmarkedBooks = updatedBookmarkedBooks
+                        viewModel.saveBookmarks()
+                    }
+                })))
+            } label: {
+                Image(systemName: "bookmark.fill")
+                    .foregroundStyle(.black)
+            }
+            
+            Button {
+                UserDefaultsManager.shared.save(false, forKey: "isUserLoggedIn")
+                router.popALL()
+            } label: {
+                Image(systemName: "xmark.square")
+                    .foregroundStyle(.red)
+            }
+        }
+        .imageScale(.large)
+        .foregroundStyle(.black)
+        
+        Text("Which topic interests you today?")
+            .bold()
+            .font(.title2)
     }
 }
 

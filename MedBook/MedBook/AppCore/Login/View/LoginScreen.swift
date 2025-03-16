@@ -23,7 +23,6 @@ struct LoginScreen: View {
                             .font(.title)
                             .bold()
                         Text("login to continue...")
-                        
                     }
                     Spacer()
                 }
@@ -50,14 +49,17 @@ struct LoginScreen: View {
                 
                 MBPrimaryButton(title: "Login") {
                     if viewModel.checkCredentionalsValid(email: email, password: password) {
+                        UserDefaultsManager.shared.save(true, forKey: "isUserLoggedIn")
                         router.navigateTo(.home)
                     } else {
                         showErrorAlert = true
                     }
                 }
                 
-            }.padding()
-        }.alert(isPresented: $showErrorAlert) {
+            }
+            .padding()
+        }
+        .alert(isPresented: $showErrorAlert) {
             Alert(title: Text("Login Error"),
                   message: Text("Invalid user credentials, please try again"))
         }

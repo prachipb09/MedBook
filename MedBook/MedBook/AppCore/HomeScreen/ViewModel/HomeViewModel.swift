@@ -31,23 +31,14 @@ class HomeViewModel: ObservableObject {
     }
     
     func saveBookmarks() {
-        do {
-            let encodedData = try JSONEncoder().encode(Array(bookmarkedBooks))
-            UserDefaults.standard.set(encodedData, forKey: "bookmarkedBooks")
-        } catch {
-            print("Error encoding bookmarks: \(error)")
-        }
+        UserDefaultsManager.shared.save(Array(bookmarkedBooks), forKey: "bookmarkedBooks")
     }
     
     func loadBookmarks() {
-        guard let savedData = UserDefaults.standard.data(forKey: "bookmarkedBooks") else { return }
-        
-        do {
-            let decodedBookmarks = try JSONDecoder().decode([BookMarksModel].self, from: savedData)
+        if let decodedBookmarks: [BookMarksModel] = UserDefaultsManager.shared.load([BookMarksModel].self, forKey: "bookmarkedBooks") {
             bookmarkedBooks = Set(decodedBookmarks)
-        } catch {
-            print("Error decoding bookmarks: \(error)")
-            UserDefaults.standard.removeObject(forKey: "bookmarkedBooks") // Reset corrupt data
+        } else {
+            UserDefaultsManager.shared.remove(forKey: "bookmarkedBooks")
         }
     }
     

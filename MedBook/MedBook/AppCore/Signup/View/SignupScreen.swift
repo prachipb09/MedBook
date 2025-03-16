@@ -18,7 +18,6 @@ struct SignupScreen: View {
     
     var body: some View {
         NavigationBar {
-            
             ScrollView {
                 VStack(alignment: .center, spacing: 28.0) {
                     HStack {
@@ -54,7 +53,6 @@ struct SignupScreen: View {
                     
                     HStack {
                         Text("Country :\t")
-                        
                         Text(country)
                         Spacer()
                     }
@@ -79,18 +77,22 @@ struct SignupScreen: View {
             }
             .padding(.vertical, 8)
             .onAppear {
-                Task {
-                    do {
-                        try await viewModel.retriveList()
-                        list = viewModel.countryList
-                    } catch {
-                        
-                    }
-                }
+                getCountriesList()
             }
             .alert(isPresented: $showErrorAlert) {
                 Alert(title: Text("Login Error"),
                       message: Text("Invalid user credentials, please try again"))
+            }
+        }
+    }
+    
+    private func getCountriesList() {
+        Task {
+            do {
+                try await viewModel.retriveList()
+                list = viewModel.countryList
+            } catch {
+                
             }
         }
     }

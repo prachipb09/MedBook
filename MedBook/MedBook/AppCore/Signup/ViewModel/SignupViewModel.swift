@@ -8,8 +8,6 @@
 import Foundation
 import Combine
 
-
-
 class SignupViewModel: ObservableObject {
     @Published var email = ""
     @Published var password = ""
@@ -27,7 +25,6 @@ class SignupViewModel: ObservableObject {
         checkEmailValidity()
     }
     
-    
     func checkPasswordValid() {
         $password.map {
             return $0.isValidPassword()
@@ -36,7 +33,6 @@ class SignupViewModel: ObservableObject {
         .store(in: &cancelable)
     }
     
-    
     func checkEmailValidity() {
         $email.map {
             return $0.isValidEmail()
@@ -44,7 +40,6 @@ class SignupViewModel: ObservableObject {
         .assign(to: \.isEmailValid, on: self)
         .store(in: &cancelable)
     }
-    
     
     func shouldAllowSignup() -> Bool {
         isEmailValid && isPasswordValid
@@ -60,16 +55,18 @@ class SignupViewModel: ObservableObject {
     }
     
     func saveUserDetails(country: String) {
-        MedBook.KeychainHelper.shared.save(UserCredentials(email: email, password: password, country: country), forKey: "user_credentials")
+        KeychainHelper.shared.save(UserCredentials(email: email, password: password, country: country), forKey: "user_credentials")
+        UserDefaultsManager.shared.save(true, forKey: "isUserLoggedIn")
+        
     }
     
     func saveCountriesList() {
-        UserDefaults.standard.setValue(countryList, forKey: "storedCountries")
+        UserDefaultsManager.shared.save(countryList, forKey: "storedCountries")
     }
     
     @MainActor
     func retriveList() async throws {
-        if let savedCountries = UserDefaults.standard.array(forKey: "storedCountries") as? [String] {
+        if let savedCountries = UserDefaultsManager.shared.load([String].self, forKey: "storedCountries") {
             countryList = savedCountries
         } else {
             do {
@@ -79,21 +76,5 @@ class SignupViewModel: ObservableObject {
                 throw error
             }
         }
-       
-    }
-}
-
-
-
-extension String {
-    func isValidPassword() -> Bool {
-        let passwordRegex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
-        return NSPredicate(format: "SELF MATCHES %@", passwordRegex).evaluate(with: self)
-    }
-    
-    func isValidEmail() -> Bool {
-        let emailRegex = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$"
-        let predicate = NSPredicate(format: "SELF MATCHES[c] %@", emailRegex)
-        return predicate.evaluate(with: self)
     }
 }

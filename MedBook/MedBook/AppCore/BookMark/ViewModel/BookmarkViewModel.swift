@@ -11,44 +11,19 @@ class BookmarkViewModel: ObservableObject {
         loadBookmarks()
     }
     
-    func toggleBookmark(for book: BookMarksModel) {
-        if bookmarkedBooks.contains(book) {
-            bookmarkedBooks.remove(book)
-        } else {
-            bookmarkedBooks.insert(book)
-        }
-        saveBookmarks()
-    }
-    
     func removeBookmark(for book: BookMarksModel) {
         bookmarkedBooks.remove(book)
         saveBookmarks()
     }
     
-    func isBookmarked(_ book: BookMarksModel) -> Bool {
-        return bookmarkedBooks.contains(book)
-    }
-    
     private func saveBookmarks() {
-        do {
-            let data = try JSONEncoder().encode(Array(bookmarkedBooks))
-            UserDefaults.standard.set(data, forKey: "bookmarkedBooks")
-            callback(bookmarkedBooks)
-        } catch {
-            print("❌ Failed to save bookmarks: \(error)")
-        }
+        UserDefaultsManager.shared.save(Array(bookmarkedBooks), forKey: "bookmarkedBooks")
+        callback(bookmarkedBooks)
     }
     
     func loadBookmarks() {
-        guard let data = UserDefaults.standard.data(forKey: "bookmarkedBooks") else {
-            print("ℹ️ No bookmarks found in UserDefaults")
-            return
-        }
-        do {
-            let bookmarks = try JSONDecoder().decode([BookMarksModel].self, from: data)
+        if let bookmarks: [BookMarksModel] = UserDefaultsManager.shared.load([BookMarksModel].self, forKey: "bookmarkedBooks") {
             bookmarkedBooks = Set(bookmarks)
-        } catch {
-            print("❌ Failed to load bookmarks: \(error.localizedDescription)")
         }
     }
 }
