@@ -19,7 +19,7 @@ class BooksSearchRepoImpl: BooksSearchRepo {
 }
 
 enum BooksSearchRestRepo: NetworkRepository {
-    case book(searchItem: String, page: Int = 1, limit: Int = 10) // Added page & limit
+    case book(searchItem: String, page: Int = 1, limit: Int = 10)
     
     var host: String { "openlibrary.org" }
     
@@ -34,8 +34,8 @@ enum BooksSearchRestRepo: NetworkRepository {
             case .book(let searchItem, let page, let limit):
                 return [
                     URLQueryItem(name: "title", value: searchItem),
-                    URLQueryItem(name: "page", value: "\(page)"),  // 🆕 Page number
-                    URLQueryItem(name: "limit", value: "\(limit)") // 🆕 Results per page
+                    URLQueryItem(name: "page", value: "\(page)"),
+                    URLQueryItem(name: "limit", value: "\(limit)")
                 ]
         }
     }

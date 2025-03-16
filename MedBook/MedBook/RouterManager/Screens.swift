@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 enum Screens {
     case login
     case signup

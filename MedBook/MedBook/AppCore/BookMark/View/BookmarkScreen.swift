@@ -11,6 +11,7 @@ struct BookmarkScreen: View {
                     .font(.title)
                 
                 if viewModel.bookmarkedBooks.isEmpty {
+                    // in case of no books are saved show the below message
                     Text("Oops... you don't have any saved books")
                     Spacer()
                 } else {

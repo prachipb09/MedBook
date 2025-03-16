@@ -149,27 +149,8 @@ struct HomeScreen: View {
                 .font(.largeTitle)
             Spacer()
             
-            Button {
-                viewModel.loadBookmarks()
-                router.navigateTo(.bookmark(BookmarkViewModel(bookmarkedBooks: viewModel.bookmarkedBooks,
-                                                              callback: { updatedBookmarkedBooks in
-                    if updatedBookmarkedBooks.count != viewModel.bookmarkedBooks.count {
-                        viewModel.bookmarkedBooks = updatedBookmarkedBooks
-                        viewModel.saveBookmarks()
-                    }
-                })))
-            } label: {
-                Image(systemName: "bookmark.fill")
-                    .foregroundStyle(.black)
-            }
-            
-            Button {
-                UserDefaultsManager.shared.save(false, forKey: "isUserLoggedIn")
-                router.popALL()
-            } label: {
-                Image(systemName: "xmark.square")
-                    .foregroundStyle(.red)
-            }
+            bookmarkCTA()
+            logoutCTA()
         }
         .imageScale(.large)
         .foregroundStyle(.black)
@@ -177,6 +158,33 @@ struct HomeScreen: View {
         Text("Which topic interests you today?")
             .bold()
             .font(.title2)
+    }
+    
+    
+    func bookmarkCTA() -> some View {
+        Button {
+            viewModel.loadBookmarks()
+            router.navigateTo(.bookmark(BookmarkViewModel(bookmarkedBooks: viewModel.bookmarkedBooks,
+                                                          callback: { updatedBookmarkedBooks in
+                if updatedBookmarkedBooks.count != viewModel.bookmarkedBooks.count {
+                    viewModel.bookmarkedBooks = updatedBookmarkedBooks
+                    viewModel.saveBookmarks()
+                }
+            })))
+        } label: {
+            Image(systemName: "bookmark.fill")
+                .foregroundStyle(.black)
+        }
+    }
+    
+    func logoutCTA() -> some View {
+        Button {
+            UserDefaultsManager.shared.save(false, forKey: "isUserLoggedIn")
+            router.popALL()
+        } label: {
+            Image(systemName: "xmark.square")
+                .foregroundStyle(.red)
+        }
     }
 }
 

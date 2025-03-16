@@ -1,6 +1,5 @@
 
 import SwiftUI
-
     // MARK: - Books
 struct Books: Codable {
     let numFound, start: Int
@@ -10,7 +9,6 @@ struct Books: Codable {
     let offset: String?
     let docs: [Doc]
 }
-
     // MARK: - Doc
 struct Doc: Codable, Hashable, Identifiable {
     let id = UUID()
@@ -43,7 +41,6 @@ struct BookMarksModel: Codable, Hashable {
         return nil
     }
     
-        // Ensuring Hashable works correctly
     func hash(into hasher: inout Hasher) {
         hasher.combine(key)
     }
@@ -53,13 +50,11 @@ struct BookMarksModel: Codable, Hashable {
     }
 }
 
-
 struct UserCredentials: Codable {
     let email: String
     let password: String
     let country: String
 }
-
     // MARK: - Countries
 struct Countries: Codable {
     let status: String
@@ -74,7 +69,6 @@ struct Countries: Codable {
         case version, access, total, offset, limit, data
     }
 }
-
     // MARK: - Datum
 struct Datum: Codable {
     let country: String
