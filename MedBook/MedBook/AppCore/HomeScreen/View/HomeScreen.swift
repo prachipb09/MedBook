@@ -57,6 +57,7 @@ struct HomeScreen: View {
                         ProgressView()
                         Spacer()
                     }
+                    Spacer()
                 } else {
                     listView()
                 }
