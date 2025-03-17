@@ -49,7 +49,7 @@ class SignupViewModel: ObservableObject {
         if !isEmailValid && !isPasswordValid {
             return (false, "invalid user credentials")
         }
-        if UserDataManager.shared.fetchUserByEmail(email: email) == nil {
+        if UserDataManager.shared.fetchUserByEmail(email: email) != nil {
             return (false, "User already exist...")
         }
         

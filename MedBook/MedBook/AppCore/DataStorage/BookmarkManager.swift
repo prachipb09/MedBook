@@ -9,8 +9,6 @@ class BookMarksModel {
     var title: String
     var userEmail: String
     
-    @Attribute(.unique) var uniqueID: String { "\(key)_\(coverI)_\(userEmail)" } 
-    
     init(key: String, coverI: Int, author: String, title: String, userEmail: String) {
         self.key = key
         self.coverI = coverI
