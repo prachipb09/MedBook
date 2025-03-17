@@ -59,8 +59,8 @@ class SignupViewModel: ObservableObject {
         UserDefaultsManager.shared.save(country, forKey: "defaultCountry")
     }
     
-    func loadDefaultCountry() -> String {
-        UserDefaultsManager.shared.load(String.self, forKey: "defaultCountry") ?? ""
+    func loadDefaultCountry() -> String? {
+        UserDefaultsManager.shared.load(String.self, forKey: "defaultCountry")
     }
     
     @MainActor
@@ -82,6 +82,8 @@ class SignupViewModel: ObservableObject {
         } else {
             do {
                 countryList = try await fetchCountryList().data.map { $0.value.country }.sorted()
+                var list: [String] = ["Select a country..."]
+                list.append(contentsOf: countryList)
                 saveCountriesList()
             } catch {
                 throw error

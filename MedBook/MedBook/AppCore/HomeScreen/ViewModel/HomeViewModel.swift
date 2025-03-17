@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 @MainActor
 class HomeViewModel: ObservableObject {
@@ -13,7 +14,6 @@ class HomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var hasMoreData = true
     @Published var bookmarkedBooks: [BookMarksModel] = []
-    
     private var currentPage = 1
     
     func toggleBookmark(for book: BookMarksModel) {
@@ -52,9 +52,5 @@ class HomeViewModel: ObservableObject {
             print("❌ Error fetching books:", error)
         }
         isLoading = false
-    }
-    
-    func convertImageToData() {
-        
     }
 }

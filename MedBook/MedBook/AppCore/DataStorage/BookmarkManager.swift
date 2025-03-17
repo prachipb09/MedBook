@@ -7,7 +7,6 @@
 
 import SwiftData
 import Foundation
-import UIKit
 
 @Model
 class BookMarksModel {

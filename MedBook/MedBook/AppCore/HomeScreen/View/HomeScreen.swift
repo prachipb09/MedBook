@@ -16,8 +16,9 @@ enum SortOption {
 struct HomeScreen: View {
     @EnvironmentObject var router: Router
     @StateObject var viewModel = HomeViewModel()
-    @State private var selectedSort: SortOption = .title  // Default sorting option
+    @State private var selectedSort: SortOption = .title
     @State private var searchText: String = ""
+    @State private var debounceTask: Task<Void, Never>?
     
     var sortedBooks: [Doc] {
         switch selectedSort {
@@ -30,25 +31,17 @@ struct HomeScreen: View {
         }
     }
     
-    
     var body: some View {
         NavigationBar(hideBackButton: true) {
             VStack(alignment: .leading, spacing: 16) {
                 headerView()
                 VStack {
-                    TextField("Search your books....", text: $searchText)
-                        // Sorting Options
+                    searchBarView()
                     sortingOptionView()
                 }
                 .padding()
                 .onChange(of: $searchText.wrappedValue) { oldValue, newValue in
-                    if searchText.count >= 3 && oldValue != newValue.trim {
-                        Task {
-                            await viewModel.fetchResults(searchQuery: searchText, reset: true)
-                        }
-                    } else {
-                        viewModel.books = []
-                    }
+                    performSearch(oldValue: oldValue, newValue: newValue)
                 }
                 
                 if viewModel.books.isEmpty && !searchText.isEmpty {
@@ -63,6 +56,39 @@ struct HomeScreen: View {
                 }
             }
             .padding()
+        }.onTapGesture {
+            self.hideKeyboard()
+        }
+    }
+    
+    func searchBarView() -> some View {
+        TextField("Search your books....", text: $searchText)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 24)
+            .overlay(
+                Capsule()
+                    .stroke(.black, lineWidth: 2.0)
+            )
+            .shadow(color: .black, radius: 10, x: 5, y: 5)
+    }
+    func performSearch(oldValue: String, newValue: String) {
+        debounceTask?.cancel()
+        
+        let trimmedSearchText = newValue.trim
+        
+            // Ensure at least 3 characters before triggering API
+        guard trimmedSearchText.count >= 3, oldValue != trimmedSearchText else {
+            viewModel.books = []
+            return
+        }
+            // Start a new debounce task
+        debounceTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 sec delay
+            
+                // Ensure task wasn't cancelled before executing
+            guard !Task.isCancelled else { return }
+            
+            await viewModel.fetchResults(searchQuery: trimmedSearchText, reset: true)
         }
     }
     

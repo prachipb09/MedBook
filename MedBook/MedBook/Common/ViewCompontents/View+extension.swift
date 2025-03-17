@@ -16,13 +16,13 @@ extension View {
             image.resizable()
                 .frame(width: 70, height: 70, alignment: .center)
         } placeholder: {
-            Image(systemName: "book.closed") // Use an SF Symbol
+            Image(systemName: "book.closed")
                 .resizable()
                 .frame(width: 70, height: 70, alignment: .center)
                 .foregroundColor(.gray)
                 .opacity(0.5)
         }
-        .transition(.fade(duration: 0.5)) // Fade Transition with duration
+        .transition(.fade(duration: 0.5))
         .scaledToFit()
         .cornerRadius(10)
     }

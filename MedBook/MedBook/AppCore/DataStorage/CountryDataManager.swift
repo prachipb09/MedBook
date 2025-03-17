@@ -5,20 +5,25 @@
 //  Created by Prachi Bharadwaj on 17/03/25.
 //
 
-
-import SwiftData
-import Foundation
-import SwiftData
-import Foundation
 import SwiftData
 import Foundation
 
 @Model
 class CountryList {
-    var countries: [String]
+    var countriesData: Data // Store encoded array
     
     init(countries: [String]) {
-        self.countries = countries
+        self.countriesData = (try? JSONEncoder().encode(countries)) ?? Data()
+    }
+    
+        /// **Computed Property to Access Countries as an Array**
+    var countries: [String] {
+        get {
+            (try? JSONDecoder().decode([String].self, from: countriesData)) ?? []
+        }
+        set {
+            countriesData = (try? JSONEncoder().encode(newValue)) ?? Data()
+        }
     }
 }
 

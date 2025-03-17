@@ -11,7 +11,7 @@ struct SignupScreen: View {
     @EnvironmentObject var router: Router
     @StateObject var viewModel = SignupViewModel()
     @State private var list: [String] = [""]
-    @State private var country: String = "Select a country..."
+    @State private var country: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showErrorAlert = false
@@ -65,7 +65,6 @@ struct SignupScreen: View {
                     
                     MBPrimaryButton(title: "Let's go -->") {
                         if viewModel.shouldAllowSignup() {
-                            viewModel.saveUserDetails(country: country)
                             router.navigateTo(.home)
                         } else {
                             showErrorAlert = true
@@ -76,9 +75,12 @@ struct SignupScreen: View {
             }
             .padding(.vertical, 8)
             .onAppear {
-                country = viewModel.loadDefaultCountry()
+                country = viewModel.loadDefaultCountry() ?? list[0]
                 getCountriesList()
             }
+            .onChange(of: $country.wrappedValue, {
+                viewModel.saveUserDetails(country: country)
+            })
             .alert(isPresented: $showErrorAlert) {
                 Alert(title: Text("Login Error"),
                       message: Text("Invalid user credentials or user already exists in database. Please try again"))

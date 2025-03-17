@@ -8,7 +8,6 @@
 
 import SwiftData
 import Foundation
-import Foundation
 
 @Model
 class UserCredentials {
