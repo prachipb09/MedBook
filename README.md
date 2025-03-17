@@ -15,6 +15,14 @@ note:
 the country code api wasn't working when was trying to hit, so it's not implemented.
 the openlibrary api has no attributes for average rating and hits so inplace of that i've used first publication year and author name in the sorting filter
 
+Dependencies- 
+
+SDWebImageSwiftUI - https://github.com/SDWebImage/SDWebImageSwiftUI
+
+SDWebImageSwiftUI is used for asynchronous image loading and caching in SwiftUI views.
+This project uses Swift Package Manager (SPM) for dependency management. All necessary dependencies are included in the Package.swift file.
+To install dependencies, simply open the project in Xcode and build the project. Xcode will automatically resolve and download any dependencies specified in the Package.swift file.
+
 Please check the 4 videos attached for the working idea for login, signup , homescreen and bookmark
 
 signup screen- 
