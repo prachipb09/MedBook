@@ -42,8 +42,18 @@ class SignupViewModel: ObservableObject {
     }
     
     @MainActor
-    func shouldAllowSignup() -> Bool {
-        isEmailValid && isPasswordValid && UserDataManager.shared.fetchUserByEmail(email: email) == nil
+    func shouldAllowSignup(selectedCountry: String) -> (Bool, String) {
+        if selectedCountry == "Select a country..." {
+            return (false, " Select a country to signup")
+        }
+        if !isEmailValid && !isPasswordValid {
+            return (false, "invalid user credentials")
+        }
+        if UserDataManager.shared.fetchUserByEmail(email: email) == nil {
+            return (false, "User already exist...")
+        }
+        
+        return (true, "")
     }
     
     @MainActor
@@ -83,8 +93,6 @@ class SignupViewModel: ObservableObject {
         } else {
             do {
                 countryList = try await fetchCountryList().data.map { $0.value.country }.sorted()
-                var list: [String] = ["Select a country..."]
-                list.append(contentsOf: countryList)
                 saveCountriesList()
             } catch {
                 throw error

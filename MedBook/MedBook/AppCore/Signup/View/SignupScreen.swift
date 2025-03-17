@@ -14,7 +14,7 @@ struct SignupScreen: View {
     @State private var country: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
-    @State private var showErrorAlert = false
+    @State private var showErrorAlert: (show: Bool, message: String) = (false, "")
     
     var body: some View {
         NavigationBar {
@@ -64,11 +64,12 @@ struct SignupScreen: View {
                     .pickerStyle(.wheel)
                     
                     MBPrimaryButton(title: "Let's go -->") {
-                        if viewModel.shouldAllowSignup() {
+                        let (isValidDetails, errorMessage) = viewModel.shouldAllowSignup(selectedCountry: country)
+                        if isValidDetails {
                             viewModel.saveUserDetails(country: country)
                             router.navigateTo(.home)
                         } else {
-                            showErrorAlert = true
+                            showErrorAlert = (true, errorMessage)
                         }
                     }
                 }
@@ -76,15 +77,18 @@ struct SignupScreen: View {
             }
             .padding(.vertical, 8)
             .onAppear {
-                country = viewModel.loadDefaultCountry() ?? list[0]
                 getCountriesList()
+                country = viewModel.loadDefaultCountry() ?? "Select a country..."
             }
             .onChange(of: country, {
                 viewModel.saveDefaultCountry(country: country)
             })
-            .alert(isPresented: $showErrorAlert) {
+            .alert(isPresented: $showErrorAlert.show) {
                 Alert(title: Text("Login Error"),
-                      message: Text("Invalid user credentials or user already exists in database. Please try again"))
+                      message: Text(showErrorAlert.message),
+                      dismissButton: .default(Text("Close")){
+                    showErrorAlert = (false, "")
+                })
             }
         }
         .onTapGesture {
