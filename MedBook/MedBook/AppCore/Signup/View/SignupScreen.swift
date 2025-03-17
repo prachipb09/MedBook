@@ -65,6 +65,7 @@ struct SignupScreen: View {
                     
                     MBPrimaryButton(title: "Let's go -->") {
                         if viewModel.shouldAllowSignup() {
+                            viewModel.saveUserDetails(country: country)
                             router.navigateTo(.home)
                         } else {
                             showErrorAlert = true
@@ -79,7 +80,7 @@ struct SignupScreen: View {
                 getCountriesList()
             }
             .onChange(of: $country.wrappedValue, {
-                viewModel.saveUserDetails(country: country)
+                viewModel.saveDefaultCountry(country: country)
             })
             .alert(isPresented: $showErrorAlert) {
                 Alert(title: Text("Login Error"),
