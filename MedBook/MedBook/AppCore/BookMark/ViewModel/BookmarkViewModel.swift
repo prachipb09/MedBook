@@ -1,29 +1,24 @@
 import Foundation
 
+@MainActor
 class BookmarkViewModel: ObservableObject {
     
-    @Published var bookmarkedBooks: Set<BookMarksModel> = []
-    let callback: (Set<BookMarksModel>) -> Void
+    @Published var bookmarkedBooks: [BookMarksModel] = []
+    let callback: (Bool) -> Void
     
-    init(bookmarkedBooks: Set<BookMarksModel>, callback: @escaping (Set<BookMarksModel>) -> Void) {
+    init(bookmarkedBooks: [BookMarksModel], callback: @escaping (Bool) -> Void) {
         self.callback = callback
         self.bookmarkedBooks = bookmarkedBooks
         loadBookmarks()
     }
     
     func removeBookmark(for book: BookMarksModel) {
-        bookmarkedBooks.remove(book)
-        saveBookmarks()
-    }
-    
-    private func saveBookmarks() {
-        UserDefaultsManager.shared.save(Array(bookmarkedBooks), forKey: "bookmarkedBooks")
-        callback(bookmarkedBooks)
+        BookmarkManager.shared.deleteBookmark(forKey: book.key)
+        loadBookmarks()
+        callback(true)
     }
     
     func loadBookmarks() {
-        if let bookmarks: [BookMarksModel] = UserDefaultsManager.shared.load([BookMarksModel].self, forKey: "bookmarkedBooks") {
-            bookmarkedBooks = Set(bookmarks)
-        }
+        bookmarkedBooks = BookmarkManager.shared.fetchAllBookmarks()
     }
 }

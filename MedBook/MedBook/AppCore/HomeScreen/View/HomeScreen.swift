@@ -102,44 +102,32 @@ struct HomeScreen: View {
     
     @ViewBuilder
     func listView() -> some View {
-        List(sortedBooks, id: \.id) { book in
-            HStack(alignment: .top) {
-                if let cachedImage = viewModel.imageCache[book.key] {
-                    Image(uiImage: cachedImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                } else {
-                    ProgressView()
-                        .frame(width: 100, height: 100)
+        List {
+            Section {
+                ForEach(0..<sortedBooks.count, id: \.self) { i in
+                    BookListCell(book: sortedBooks[i])
+                        .swipeActions(edge: .trailing) {
+                            swipeActionView(bookmarkModel: BookMarksModel(
+                                key: sortedBooks[i].key,
+                                coverI: sortedBooks[i].coverI ?? 0,
+                                author: sortedBooks[i].authorName?.first ?? "",
+                                title: sortedBooks[i].title
+                            ))
+                        }
                         .onAppear {
-                            Task {
-                                await viewModel.loadImage(for: book)
+                            if i+1 == sortedBooks.count {
+                                Task {
+                                    await viewModel.fetchResults(searchQuery: searchText)
+                                }
                             }
                         }
                 }
-                Text(book.title)
-                Spacer()
-            }
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
-            .swipeActions(edge: .trailing) {
-                swipeActionView(bookmarkModel: BookMarksModel(
-                    key: book.key,
-                    imageData: viewModel.imageCache[book.key]?.pngData(),
-                    author: book.authorName?.first ?? "",
-                    title: book.title
-                ))
-            }
-            .onAppear {
-                if book.key == viewModel.books.last?.key {
-                    Task {
-                        await viewModel.fetchResults(searchQuery: searchText)
-                    }
-                }
             }
         }
-        .listStyle(.plain)
+        .listStyle(PlainListStyle())
+        .scrollContentBackground(.hidden)
+        .background(Color.white)
+        
     }
     
     @ViewBuilder
@@ -166,10 +154,9 @@ struct HomeScreen: View {
         Button {
             viewModel.loadBookmarks()
             router.navigateTo(.bookmark(BookmarkViewModel(bookmarkedBooks: viewModel.bookmarkedBooks,
-                                                          callback: { updatedBookmarkedBooks in
-                if updatedBookmarkedBooks.count != viewModel.bookmarkedBooks.count {
-                    viewModel.bookmarkedBooks = updatedBookmarkedBooks
-                    viewModel.saveBookmarks()
+                                                          callback: { isBookmarkedBookUpdated in
+                if isBookmarkedBookUpdated {
+                    viewModel.loadBookmarks()
                 }
             })))
         } label: {

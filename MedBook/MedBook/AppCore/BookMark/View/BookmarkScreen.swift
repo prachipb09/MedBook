@@ -29,23 +29,14 @@ struct BookmarkScreen: View {
     func listView() -> some View {
         List(Array(viewModel.bookmarkedBooks).sorted { $0.title < $1.title }, id: \.key) { book in
             HStack {
-                if let uiImage = book.uiImage {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                } else {
-                    Image(systemName: "photo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 100, height: 100)
-                        .foregroundColor(.gray)
-                }
+                bookCoverImage(for: book.coverI)
                 VStack(alignment: .leading) {
                     Text(book.title)
                         .bold()
+                        .multilineTextAlignment(.leading)
                     Text(book.author)
                         .foregroundColor(.gray)
+                        .multilineTextAlignment(.leading)
                 }
             }
             .swipeActions(edge: .trailing) {

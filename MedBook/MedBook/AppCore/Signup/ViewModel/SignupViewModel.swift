@@ -1,9 +1,9 @@
-//
-//  SignupViewModel.swift
-//  MedBook
-//
-//  Created by Prachi Bharadwaj on 15/03/25.
-//
+    //
+    //  SignupViewModel.swift
+    //  MedBook
+    //
+    //  Created by Prachi Bharadwaj on 15/03/25.
+    //
 
 import Foundation
 import Combine
@@ -41,8 +41,9 @@ class SignupViewModel: ObservableObject {
         .store(in: &cancelable)
     }
     
+    @MainActor
     func shouldAllowSignup() -> Bool {
-        isEmailValid && isPasswordValid
+        isEmailValid && isPasswordValid && UserDataManager.shared.fetchUserByEmail(email: email) == nil
     }
     
     @MainActor
@@ -54,19 +55,29 @@ class SignupViewModel: ObservableObject {
         }
     }
     
-    func saveUserDetails(country: String) {
-        KeychainHelper.shared.save(UserCredentials(email: email, password: password, country: country), forKey: "user_credentials")
-        UserDefaultsManager.shared.save(true, forKey: "isUserLoggedIn")
-        
+    func saveDefaultCountry(country: String) {
+        UserDefaultsManager.shared.save(country, forKey: "defaultCountry")
     }
     
+    func loadDefaultCountry() -> String {
+        UserDefaultsManager.shared.load(String.self, forKey: "defaultCountry") ?? ""
+    }
+    
+    @MainActor
+    func saveUserDetails(country: String) {
+        saveDefaultCountry(country: country)
+        UserDataManager.shared.saveUser(email: email, password: password, country: country)
+    }
+    
+    @MainActor
     func saveCountriesList() {
-        UserDefaultsManager.shared.save(countryList, forKey: "storedCountries")
+        CountryDataManager.shared.saveCountriesList(countries: countryList)
     }
     
     @MainActor
     func retriveList() async throws {
-        if let savedCountries = UserDefaultsManager.shared.load([String].self, forKey: "storedCountries") {
+        let savedCountries = CountryDataManager.shared.fetchCountriesList()
+        if !savedCountries.isEmpty {
             countryList = savedCountries
         } else {
             do {

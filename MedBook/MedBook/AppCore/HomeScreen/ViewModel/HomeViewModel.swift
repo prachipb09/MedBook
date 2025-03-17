@@ -12,56 +12,20 @@ class HomeViewModel: ObservableObject {
     @Published var books: [Doc] = []
     @Published var isLoading = false
     @Published var hasMoreData = true
-    @Published var imageCache: [String: UIImage] = [:]
-    @Published var bookmarkedBooks: Set<BookMarksModel> = []
+    @Published var bookmarkedBooks: [BookMarksModel] = []
     
     private var currentPage = 1
     
     func toggleBookmark(for book: BookMarksModel) {
-        if let existingBook = bookmarkedBooks.first(where: { $0.key == book.key }) {
-            bookmarkedBooks.remove(existingBook)
-        } else {
-            bookmarkedBooks.insert(book)
-        }
-        saveBookmarks()
+        BookmarkManager.shared.toggleBookmark(for: book)
     }
     
     func isBookmarked(_ book: BookMarksModel) -> Bool {
-        return bookmarkedBooks.contains { $0.key == book.key }
-    }
-    
-    func saveBookmarks() {
-        UserDefaultsManager.shared.save(Array(bookmarkedBooks), forKey: "bookmarkedBooks")
+        BookmarkManager.shared.isBookmarked(book)
     }
     
     func loadBookmarks() {
-        if let decodedBookmarks: [BookMarksModel] = UserDefaultsManager.shared.load([BookMarksModel].self, forKey: "bookmarkedBooks") {
-            bookmarkedBooks = Set(decodedBookmarks)
-        } else {
-            UserDefaultsManager.shared.remove(forKey: "bookmarkedBooks")
-        }
-    }
-    
-    func loadImage(for book: Doc) async {
-        guard let coverId = book.coverI else { return }
-        let urlString = "https://covers.openlibrary.org/b/id/\(coverId).jpg"
-        
-        guard let url = URL(string: urlString) else { return }
-        
-        if imageCache[book.key] != nil {
-            return  // Image already cached
-        }
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            if let image = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    self.imageCache[book.key] = image
-                }
-            }
-        } catch {
-            print("Failed to load image for \(book.key): \(error.localizedDescription)")
-        }
+        bookmarkedBooks = BookmarkManager.shared.fetchAllBookmarks()
     }
     
     func fetchResults(searchQuery: String, reset: Bool = false, booksRepo: BooksSearchRepo = BooksSearchRepoImpl()) async {
@@ -87,7 +51,10 @@ class HomeViewModel: ObservableObject {
         } catch {
             print("❌ Error fetching books:", error)
         }
-        
         isLoading = false
+    }
+    
+    func convertImageToData() {
+        
     }
 }

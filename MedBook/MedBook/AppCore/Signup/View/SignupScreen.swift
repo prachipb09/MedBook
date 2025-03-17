@@ -26,7 +26,6 @@ struct SignupScreen: View {
                                 .font(.title)
                                 .bold()
                             Text("sign up to continue...")
-                            
                         }
                         Spacer()
                     }
@@ -77,11 +76,12 @@ struct SignupScreen: View {
             }
             .padding(.vertical, 8)
             .onAppear {
+                country = viewModel.loadDefaultCountry()
                 getCountriesList()
             }
             .alert(isPresented: $showErrorAlert) {
                 Alert(title: Text("Login Error"),
-                      message: Text("Invalid user credentials, please try again"))
+                      message: Text("Invalid user credentials or user already exists in database. Please try again"))
             }
         }
         .onTapGesture {

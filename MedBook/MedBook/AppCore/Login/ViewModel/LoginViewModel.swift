@@ -40,10 +40,11 @@ class LoginViewModel: ObservableObject {
         .store(in: &cancelable)
     }
     
+    @MainActor
     func checkCredentionalsValid(email: String, password: String) -> Bool {
-        guard let retrievedCredentials: UserCredentials = KeychainHelper.shared.get(UserCredentials.self, forKey: "user_credentials") else {
+        guard let retrievedCredentials = UserDataManager.shared.fetchUserByEmail(email: email)  else {
             return false
         }
-        return retrievedCredentials.email == email && retrievedCredentials.password == password ? true : false
+        return retrievedCredentials.password == password ? true : false
     }
 }

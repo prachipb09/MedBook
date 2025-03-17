@@ -28,33 +28,6 @@ struct Doc: Codable, Hashable, Identifiable {
     let subtitle: String?
 }
 
-struct BookMarksModel: Codable, Hashable {
-    let key: String
-    let imageData: Data? // Store image as Data
-    let author: String
-    let title: String
-    
-    var uiImage: UIImage? {
-        if let imageData = imageData {
-            return UIImage(data: imageData)
-        }
-        return nil
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(key)
-    }
-    
-    static func == (lhs: BookMarksModel, rhs: BookMarksModel) -> Bool {
-        return lhs.key == rhs.key
-    }
-}
-
-struct UserCredentials: Codable {
-    let email: String
-    let password: String
-    let country: String
-}
     // MARK: - Countries
 struct Countries: Codable {
     let status: String
