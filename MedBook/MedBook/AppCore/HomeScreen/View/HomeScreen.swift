@@ -88,7 +88,7 @@ struct HomeScreen: View {
                 // Ensure task wasn't cancelled before executing
             guard !Task.isCancelled else { return }
             
-            await viewModel.fetchResults(searchQuery: trimmedSearchText, reset: true)
+            try? await viewModel.fetchResults(searchQuery: trimmedSearchText, reset: true)
         }
     }
     
@@ -137,13 +137,14 @@ struct HomeScreen: View {
                                 key: sortedBooks[i].key,
                                 coverI: sortedBooks[i].coverI ?? 0,
                                 author: sortedBooks[i].authorName?.first ?? "",
-                                title: sortedBooks[i].title
+                                title: sortedBooks[i].title,
+                                userEmail: viewModel.mailID
                             ))
                         }
                         .onAppear {
                             if i+1 == sortedBooks.count {
                                 Task {
-                                    await viewModel.fetchResults(searchQuery: searchText)
+                                    try? await viewModel.fetchResults(searchQuery: searchText)
                                 }
                             }
                         }
@@ -193,7 +194,7 @@ struct HomeScreen: View {
     
     func logoutCTA() -> some View {
         Button {
-            UserDefaultsManager.shared.save(false, forKey: "isUserLoggedIn")
+            KeychainHelper.shared.delete(forKey: "isUserLoggedIn")
             router.popALL()
         } label: {
             Image(systemName: "xmark.square")

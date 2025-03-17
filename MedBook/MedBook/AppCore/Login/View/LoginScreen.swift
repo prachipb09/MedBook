@@ -49,7 +49,7 @@ struct LoginScreen: View {
                 
                 MBPrimaryButton(title: "Login") {
                     if viewModel.checkCredentionalsValid(email: email, password: password) {
-                        UserDefaultsManager.shared.save(true, forKey: "isUserLoggedIn")
+                        KeychainHelper.shared.save(LoginUserData(emailID: email, isLogged: true), forKey: "isUserLoggedIn")
                         router.navigateTo(.home)
                     } else {
                         showErrorAlert = true

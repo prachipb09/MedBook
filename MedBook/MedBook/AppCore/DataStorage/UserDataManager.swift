@@ -5,7 +5,6 @@
 //  Created by Prachi Bharadwaj on 17/03/25.
 //
 
-
 import SwiftData
 import Foundation
 
@@ -25,21 +24,14 @@ class UserCredentials {
 @MainActor
 class UserDataManager {
     static let shared = UserDataManager()
-    private let modelContainer: ModelContainer
-    private let modelContext: ModelContext
+    let modelContext: ModelContext // ✅ Shared Context
     
     private init() {
-        do {
-            modelContainer = try ModelContainer(for: UserCredentials.self)
-            modelContext = modelContainer.mainContext
-        } catch {
-            fatalError("Failed to initialize ModelContainer: \(error)")
-        }
+            self.modelContext = SharedModelContainer.shared.modelContext
     }
     
-        /// **Save a new user**
+        // ✅ Save a new user
     func saveUser(email: String, password: String, country: String) {
-            // Check if the user already exists
         if fetchUserByEmail(email: email) != nil {
             print("User with this email already exists.")
             return
@@ -47,6 +39,7 @@ class UserDataManager {
         
         let newUser = UserCredentials(email: email, password: password, country: country)
         modelContext.insert(newUser)
+        
         do {
             try modelContext.save()
             print("User saved successfully!")
@@ -55,7 +48,7 @@ class UserDataManager {
         }
     }
     
-        /// Fetch a user by email
+        // ✅ Fetch a user by email
     func fetchUserByEmail(email: String) -> UserCredentials? {
         let fetchDescriptor = FetchDescriptor<UserCredentials>(
             predicate: #Predicate { $0.email == email }
@@ -63,13 +56,13 @@ class UserDataManager {
         return try? modelContext.fetch(fetchDescriptor).first
     }
     
-        /// Fetch all users
+        // ✅ Fetch all users
     func fetchAllUsers() -> [UserCredentials] {
         let fetchDescriptor = FetchDescriptor<UserCredentials>()
         return (try? modelContext.fetch(fetchDescriptor)) ?? []
     }
     
-        /// Update user details
+        // ✅ Update user details
     func updateUser(email: String, newPassword: String?, newCountry: String?) {
         if let user = fetchUserByEmail(email: email) {
             if let newPassword = newPassword {
@@ -89,7 +82,7 @@ class UserDataManager {
         }
     }
     
-        /// Delete a user by email
+        // ✅ Delete a user by email
     func deleteUser(email: String) {
         if let user = fetchUserByEmail(email: email) {
             modelContext.delete(user)
@@ -104,3 +97,4 @@ class UserDataManager {
         }
     }
 }
+

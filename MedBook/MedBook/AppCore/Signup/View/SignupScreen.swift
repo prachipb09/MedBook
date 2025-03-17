@@ -79,7 +79,7 @@ struct SignupScreen: View {
                 country = viewModel.loadDefaultCountry() ?? list[0]
                 getCountriesList()
             }
-            .onChange(of: $country.wrappedValue, {
+            .onChange(of: country, {
                 viewModel.saveDefaultCountry(country: country)
             })
             .alert(isPresented: $showErrorAlert) {

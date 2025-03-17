@@ -54,3 +54,8 @@ enum Region: String, Codable {
     case asia = "Asia"
     case centralAmerica = "Central America"
 }
+
+struct LoginUserData: Codable {
+    let emailID: String
+    let isLogged: Bool
+}

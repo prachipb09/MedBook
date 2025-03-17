@@ -40,7 +40,7 @@ struct LandingScreen: View {
             }
             .onAppear(perform: {
                 //perform autologin
-                if UserDefaultsManager.shared.load(Bool.self, forKey: "isUserLoggedIn") ?? false {
+                if KeychainHelper.shared.get(LoginUserData.self, forKey: "isUserLoggedIn")?.isLogged ?? false {
                     router.navigateTo(.home)
                 }
             })

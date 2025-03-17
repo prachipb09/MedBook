@@ -67,6 +67,7 @@ class SignupViewModel: ObservableObject {
     func saveUserDetails(country: String) {
         saveDefaultCountry(country: country)
         UserDataManager.shared.saveUser(email: email, password: password, country: country)
+        KeychainHelper.shared.save(LoginUserData(emailID: email, isLogged: true), forKey: "isUserLoggedIn")
     }
     
     @MainActor

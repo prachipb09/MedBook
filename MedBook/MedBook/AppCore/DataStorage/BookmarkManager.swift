@@ -1,49 +1,43 @@
-//
-//  BookmarkManager.swift
-//  MedBook
-//
-//  Created by Prachi Bharadwaj on 17/03/25.
-//
-
 import SwiftData
 import Foundation
 
 @Model
 class BookMarksModel {
-    @Attribute(.unique) var key: String
+    var key: String
     var coverI: Int
     var author: String
     var title: String
+    var userEmail: String
     
-    init(key: String, coverI: Int, author: String, title: String) {
+    @Attribute(.unique) var uniqueID: String { "\(key)_\(coverI)_\(userEmail)" } 
+    
+    init(key: String, coverI: Int, author: String, title: String, userEmail: String) {
         self.key = key
         self.coverI = coverI
         self.author = author
         self.title = title
+        self.userEmail = userEmail
     }
 }
 
 @MainActor
 class BookmarkManager {
     static let shared = BookmarkManager()
-    private let modelContainer: ModelContainer
-    private let modelContext: ModelContext
+    private let modelContext = SharedModelContainer.shared.modelContext // ✅ Use shared context
     
-    private init() {
-        do {
-            modelContainer = try ModelContainer(for: BookMarksModel.self)
-            modelContext = modelContainer.mainContext
-        } catch {
-            fatalError("Failed to initialize ModelContainer: \(error)")
-        }
-    }
-    
-        // Toggle Bookmark (Add/Remove)
-    func toggleBookmark(for book: BookMarksModel) {
-        if let existingBook = fetchBookmark(byKey: book.key) {
+        // Toggle Bookmark (Add/Remove) for a user
+    func toggleBookmark(for book: BookMarksModel, userEmail: String) {
+        if let existingBook = fetchBookmark(byKey: book.key, coverI: book.coverI, userEmail: userEmail) {
             modelContext.delete(existingBook) // Remove if exists
         } else {
-            modelContext.insert(book) // Add new bookmark
+            let newBookmark = BookMarksModel(
+                key: book.key,
+                coverI: book.coverI,
+                author: book.author,
+                title: book.title,
+                userEmail: userEmail
+            )
+            modelContext.insert(newBookmark) // Add new bookmark
         }
         
         do {
@@ -54,29 +48,31 @@ class BookmarkManager {
         }
     }
     
-        // Check if a book is bookmarked
-    func isBookmarked(_ book: BookMarksModel) -> Bool {
-        return fetchBookmark(byKey: book.key) != nil
+        // Check if a book is bookmarked for a user
+    func isBookmarked(_ book: BookMarksModel, userEmail: String) -> Bool {
+        return fetchBookmark(byKey: book.key, coverI: book.coverI, userEmail: userEmail) != nil
     }
     
-        // Fetch a specific bookmark by key
-    func fetchBookmark(byKey key: String) -> BookMarksModel? {
+        // Fetch a specific bookmark by key and coverI for a user
+    func fetchBookmark(byKey key: String, coverI: Int, userEmail: String) -> BookMarksModel? {
         let fetchDescriptor = FetchDescriptor<BookMarksModel>(
-            predicate: #Predicate { $0.key == key }
+            predicate: #Predicate { $0.key == key && $0.coverI == coverI && $0.userEmail == userEmail }
         )
         return try? modelContext.fetch(fetchDescriptor).first
     }
     
-        // Fetch all bookmarks
-    func fetchAllBookmarks() -> [BookMarksModel] {
-        let fetchDescriptor = FetchDescriptor<BookMarksModel>()
+        // Fetch all bookmarks for a specific user
+    func fetchAllBookmarks(for userEmail: String) -> [BookMarksModel] {
+        let fetchDescriptor = FetchDescriptor<BookMarksModel>(
+            predicate: #Predicate { $0.userEmail == userEmail }
+        )
         return (try? modelContext.fetch(fetchDescriptor)) ?? []
     }
     
-    @MainActor
-    func deleteBookmark(forKey key: String) {
-        guard let bookToDelete = fetchBookmark(byKey: key) else {
-            print("Bookmark not found for key: \(key)")
+        // Delete a bookmark for a specific user
+    func deleteBookmark(forKey key: String, coverI: Int, userEmail: String) {
+        guard let bookToDelete = fetchBookmark(byKey: key, coverI: coverI, userEmail: userEmail) else {
+            print("Bookmark not found for key: \(key), coverI: \(coverI), and user: \(userEmail)")
             return
         }
         
@@ -87,7 +83,7 @@ class BookmarkManager {
             print("Bookmark deleted successfully!")
         } catch {
             print("Failed to delete bookmark: \(error)")
+            
         }
     }
-
 }

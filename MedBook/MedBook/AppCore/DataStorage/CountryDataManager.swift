@@ -4,7 +4,6 @@
 //
 //  Created by Prachi Bharadwaj on 17/03/25.
 //
-
 import SwiftData
 import Foundation
 
@@ -30,16 +29,10 @@ class CountryList {
 @MainActor
 class CountryDataManager {
     static let shared = CountryDataManager()
-    private let modelContainer: ModelContainer
-    private let modelContext: ModelContext
+    let modelContext: ModelContext  // ✅ Uses shared context
     
     private init() {
-        do {
-            modelContainer = try ModelContainer(for: CountryList.self)
-            modelContext = modelContainer.mainContext
-        } catch {
-            fatalError("Failed to initialize ModelContainer: \(error)")
-        }
+        self.modelContext = SharedModelContainer.shared.modelContext
     }
     
         /// **Save the full country list** (Overwrites existing list)
