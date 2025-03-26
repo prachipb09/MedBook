@@ -6,6 +6,7 @@
 //
 
 import SwiftData
+import Foundation
 
 @MainActor
 class SharedModelContainer {
@@ -14,8 +15,9 @@ class SharedModelContainer {
     let modelContainer: ModelContainer
     
     private init() {
+        print(URL.applicationSupportDirectory.path(percentEncoded: false))
         do {
-            let schema = Schema([UserCredentials.self, BookMarksModel.self, CountryList.self])  // ✅ All Models
+            let schema = Schema([UserCredentials.self, BookMarksModel.self, CountryList.self, BookDetailResponse.self])  // ✅ All Models
             let configuration = ModelConfiguration()
             self.modelContainer = try ModelContainer(for: schema, configurations: [configuration])
             self.modelContext = modelContainer.mainContext

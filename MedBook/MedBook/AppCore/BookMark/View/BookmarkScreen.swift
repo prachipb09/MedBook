@@ -20,8 +20,13 @@ struct BookmarkScreen: View {
             }
             .padding(.all, 8)
             .onAppear {
-                viewModel.loadBookmarks() // Ensure bookmarks are loaded, from userDefaults, keeping in mind the scalablity
+                viewModel.loadBookmarks() 
             }
+            .onReceive(NotificationCenter.default.publisher(for: .bookMarkChanged), perform: { _ in
+                Task {
+                    viewModel.loadBookmarks()
+                }
+            })
         }
     }
     
@@ -47,12 +52,15 @@ struct BookmarkScreen: View {
                 }
                 .tint(.red)
             }
+            .onTapGesture {
+                router.navigateTo(.bookDetail(BookDetailsViewModel(bookDetail: (book.key, book.coverI, true))))
+            }
         }
         .listStyle(.plain)
     }
 }
 
 #Preview() {
-    BookmarkScreen(viewModel: BookmarkViewModel(bookmarkedBooks: [], callback: { _ in }))
+    BookmarkScreen(viewModel: BookmarkViewModel(bookmarkedBooks: []))
         .environmentObject(Router())
 }

@@ -3,13 +3,13 @@ import Foundation
 @MainActor
 class BookmarkViewModel: ObservableObject {
     
-    @Published var bookmarkedBooks: [BookMarksModel] = []
-    let callback: (Bool) -> Void
+    @Published var bookmarkedBooks: [BookMarksModel]
+    
     private var mailID: String {
         KeychainHelper.shared.get(LoginUserData.self, forKey: "isUserLoggedIn")?.emailID ?? ""
     }
-    init(bookmarkedBooks: [BookMarksModel], callback: @escaping (Bool) -> Void) {
-        self.callback = callback
+    
+    init(bookmarkedBooks: [BookMarksModel] = []) {
         self.bookmarkedBooks = bookmarkedBooks
         loadBookmarks()
     }
@@ -17,7 +17,8 @@ class BookmarkViewModel: ObservableObject {
     func removeBookmark(for book: BookMarksModel) {
         BookmarkManager.shared.deleteBookmark(forKey: book.key, coverI: book.coverI, userEmail: mailID)
         loadBookmarks()
-        callback(true)
+        NotificationCenter.default.post(name: .bookMarkChanged, object: nil)
+
     }
     
     func loadBookmarks() {

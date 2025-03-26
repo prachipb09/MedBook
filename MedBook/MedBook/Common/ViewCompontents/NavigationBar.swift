@@ -24,7 +24,8 @@ struct NavigationBar<Content: View>: View {
                             SignupScreen()
                         case .bookmark(let viewModel):
                             BookmarkScreen(viewModel: viewModel)
-                            
+                        case .bookDetail(let viewModel):
+                            BookDetailView(viewModel: viewModel)
                     }
                 }
         }

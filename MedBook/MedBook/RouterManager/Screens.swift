@@ -11,6 +11,7 @@ enum Screens {
     case login
     case signup
     case home
+    case bookDetail(BookDetailsViewModel)
     case bookmark(BookmarkViewModel)
 }
 
@@ -28,6 +29,8 @@ extension Screens: Hashable,Equatable {
             case .home:
                 hasher.combine(UUID())
             case .bookmark:
+                hasher.combine(UUID())
+            case .bookDetail:
                 hasher.combine(UUID())
         }
     }

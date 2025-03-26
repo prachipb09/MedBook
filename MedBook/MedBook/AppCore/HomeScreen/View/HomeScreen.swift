@@ -19,7 +19,7 @@ struct HomeScreen: View {
     @State private var selectedSort: SortOption = .title
     @State private var searchText: String = ""
     @State private var debounceTask: Task<Void, Never>?
-    
+
     var sortedBooks: [Doc] {
         switch selectedSort {
             case .title:
@@ -59,6 +59,11 @@ struct HomeScreen: View {
         }.onTapGesture {
             self.hideKeyboard()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .bookMarkChanged), perform: { _ in
+            Task {
+                viewModel.loadBookmarks()
+            }
+        })
     }
     
     func searchBarView() -> some View {
@@ -129,17 +134,35 @@ struct HomeScreen: View {
     @ViewBuilder
     func listView() -> some View {
         List {
-            Section {
+          
                 ForEach(0..<sortedBooks.count, id: \.self) { i in
-                    BookListCell(book: sortedBooks[i])
-                        .swipeActions(edge: .trailing) {
-                            swipeActionView(bookmarkModel: BookMarksModel(
-                                key: sortedBooks[i].key,
-                                coverI: sortedBooks[i].coverI ?? 0,
-                                author: sortedBooks[i].authorName?.first ?? "",
-                                title: sortedBooks[i].title,
-                                userEmail: viewModel.mailID
-                            ))
+                    HStack {
+                        BookListCell(book: sortedBooks[i])
+                            .swipeActions(edge: .trailing) {
+                                swipeActionView(bookmarkModel: BookMarksModel(
+                                    key: sortedBooks[i].key,
+                                    coverI: sortedBooks[i].coverI ?? 0,
+                                    author: sortedBooks[i].authorName?.first ?? "",
+                                    title: sortedBooks[i].title,
+                                    userEmail: viewModel.mailID
+                                ))
+                            }
+                    }
+                    .contentShape(Rectangle())
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        .background()
+                        .onTapGesture {
+                            let bookDetail = (sortedBooks[i].key,
+                                              sortedBooks[i].coverI ?? 0,
+                                              viewModel.isBookmarked( BookMarksModel(
+                                                key: sortedBooks[i].key,
+                                                coverI: sortedBooks[i].coverI ?? 0,
+                                                author: sortedBooks[i].authorName?.first ?? "",
+                                                title: sortedBooks[i].title,
+                                                userEmail: viewModel.mailID
+                                              ))
+                            )
+                            router.navigateTo(.bookDetail(BookDetailsViewModel(bookDetail: bookDetail)))
                         }
                         .onAppear {
                             if i+1 == sortedBooks.count {
@@ -148,7 +171,6 @@ struct HomeScreen: View {
                                 }
                             }
                         }
-                }
             }
         }
         .listStyle(PlainListStyle())
@@ -180,12 +202,7 @@ struct HomeScreen: View {
     func bookmarkCTA() -> some View {
         Button {
             viewModel.loadBookmarks()
-            router.navigateTo(.bookmark(BookmarkViewModel(bookmarkedBooks: viewModel.bookmarkedBooks,
-                                                          callback: { isBookmarkedBookUpdated in
-                if isBookmarkedBookUpdated {
-                    viewModel.loadBookmarks()
-                }
-            })))
+            router.navigateTo(.bookmark(BookmarkViewModel(bookmarkedBooks: viewModel.bookmarkedBooks)))
         } label: {
             Image(systemName: "bookmark.fill")
                 .foregroundStyle(.black)
