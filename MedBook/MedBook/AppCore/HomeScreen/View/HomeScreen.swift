@@ -56,8 +56,6 @@ struct HomeScreen: View {
                 }
             }
             .padding()
-        }.onTapGesture {
-            self.hideKeyboard()
         }
         .onReceive(NotificationCenter.default.publisher(for: .bookMarkChanged), perform: { _ in
             Task {
